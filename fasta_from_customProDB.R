@@ -1,12 +1,18 @@
-# test customProDB package
+# fasta_from_customProDB.R
+# K. Beck
+
+# Objective:
+# This script generates a fasta file from input RNA-Seq reads (BAM format) and a VCF to assist with SNP detection and sequence variants.
+
+# # # # # # # # 
+#
+# SETUP
+#
+# # # # # # # # 
 
 # if package is not installed uncomment the lines below
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("customProDB")
-
-# TODO try running this without
-  # otherwise you are bound by the Ensembl or RefSeq information provided
-# PrepareAnnotationRefseq()
 
 # Load required packages
 library("customProDB")
@@ -15,8 +21,8 @@ library("biomaRt")
 # To explore available datasets in Biomart
 # listMarts() # lists all types of data
 
-annotation_path_hs = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/"
-annotation_path_mm = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Macaque/"
+#annotation_path_hs = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/"
+annotation_path_mm = "/share/milklab/proteomics/VariantCalling/output_customProDB/"
 # alternatively, could use tmepdir()
 
 # # # # # # # # 
@@ -35,7 +41,7 @@ ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "mmulatta_gene_ensembl", hos
 PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_mm, 
                           splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
 
-# To pull current annotation data from Ensembl, human
+# To pull current annotation data from Ensembl, human (just an option)
 # ensembl.hs = useMart(biomart="ensembl") # creates a Mart object
 # listDatasets(ensembl) 
 # ensembl.hs = useMart("ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host="oct2014.archive.ensembl.org")
@@ -46,10 +52,10 @@ PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_mm,
 # Retrieve annotation data from UCSC for human
 # This version matches what DGL originally used to make the BAM files
 # Note: Annotation data must first be downloaded from online interface per vignette
-pepfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_proseq.fasta"
-CDSfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_codingseq.fasta"
-PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, annotation_path=annotation_path_hs, 
-                         splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
+# pepfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_proseq.fasta"
+# CDSfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_codingseq.fasta"
+#PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, annotation_path=annotation_path_hs, 
+#                         splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
 # option to filter for specific transcript ids by storing them as a vector and then setting transcrip_ids= to the that vector above
 
 
@@ -97,8 +103,7 @@ run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18
 
 # Human
 # For multiple samples this will run on all bam files within one folder
-run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE,
-                path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
+run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
 
 # # # # # # # # 
 #
@@ -106,7 +111,7 @@ run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_Cu
 # with variant calling
 #
 # # # # # # # # 
-vcffile = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/macaque_var.flt.vcf"
+vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
 vcf = InputVcf(vcffile)
 
 # vcf[[1]][1:3] # pull an example range of variants
