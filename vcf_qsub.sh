@@ -11,5 +11,9 @@ export PATH
 FILEROOT=/share/milklab/proteomics/VariantCalling
 
 # generate VCF file
-samtools mpileup -DVuf $FILEROOT/ReferenceData/rheMac2.fa $FILEROOT/*.bam | bcftools view > $FILEROOT/monkey_pxtx_paired.vcf
+# line below is potentially wrong function call for new bcftools version
+# samtools mpileup -DVuf $FILEROOT/ReferenceData/rheMac2.fa $FILEROOT/*.bam | bcftools view > $FILEROOT/monkey_pxtx_paired.vcf
+
+# test correct bcf function
+samtools mpileup -DVuf $FILEROOT/ReferenceData/rheMac2.fa $FILEROOT/*.bam | bcftools call -vm > $FILEROOT/updated_monkey_pxtx_paired.vcf
 
