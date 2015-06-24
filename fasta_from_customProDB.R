@@ -15,41 +15,44 @@
 # biocLite("customProDB")
 
 # Load required packages
-library("customProDB")
-library("biomaRt")
+require("customProDB")
 
-# To explore available datasets in Biomart
+# To explore available reference datasets in Biomart
 # listMarts() # lists all types of data
 
-#annotation_path_hs = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/"
 annotation_path_mm = "/share/milklab/proteomics/VariantCalling/output_customProDB/"
-# alternatively, could use tmepdir()
+annotation_path_hs = "/share/milklab/proteomics/VariantCalling/output_customProDB/"
+# alternatively, could use tmepdir() to generate a unique path
 
 # # # # # # # # 
 #
 # Get annotation data
 #
 # # # # # # # # 
+# From Enseml
 # Versions corresponding to our BAM files
-  # Human: GRCh37
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
+retrieveReference_mm = FALSE
+retrieveReference_hs = FALSE
 
-# Retrieve annotation data from Ensembl for macaque
-ensembl = useMart(biomart="ensembl") # creates a Mart object
-# listDatasets(ensembl)
-ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "mmulatta_gene_ensembl", host="may2012.archive.ensembl.org")
-PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_mm, 
+if(retrieveReference_mm == TRUE){
+	cat("Retrieving annotation data\n")
+	ensembl = useMart(biomart="ensembl") # creates a Mart object
+	# listDatasets(ensembl) # view available datasets (optional)
+	ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "mmulatta_gene_ensembl", host="may2012.archive.ensembl.org")
+	PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_mm, 
+                          splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
+}
+
+if(retrieveReference_hs == TRUE){
+	ensembl = useMart(biomart="ensembl") # creates a Mart object
+	# listDatasets(ensembl) # view available datasets (optional) 
+	ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host="oct2014.archive.ensembl.org")
+	PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_hs, 
                           splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
 
-# To pull current annotation data from Ensembl, human (just an option)
-# ensembl.hs = useMart(biomart="ensembl") # creates a Mart object
-# listDatasets(ensembl) 
-# ensembl.hs = useMart("ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host="oct2014.archive.ensembl.org")
-# PrepareAnnotationEnsembl(mart=ensembl.hs, annotation_path=annotation_path, 
-#                          splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
-
-
 # Retrieve annotation data from UCSC for human
+  # Human: GRCh37
 # This version matches what DGL originally used to make the BAM files
 # Note: Annotation data must first be downloaded from online interface per vignette
 # pepfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_proseq.fasta"
@@ -103,7 +106,7 @@ run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18
 
 # Human
 # For multiple samples this will run on all bam files within one folder
-run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
+run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_Custo  mProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
 
 # # # # # # # # 
 #
@@ -115,14 +118,10 @@ vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
 vcf = InputVcf(vcffile)
 
 # vcf[[1]][1:3] # pull an example range of variants
-table(values(vcf[[1]])[['INDEL']])
-table(values(vcf[[1]])[['IDV']])
-table(values(vcf[[1]])[['IDV']])
+if (table(values(vcf[[1]])[['INDEL']]) < 5) {
+	cat("Warning: less than 5 INDELs check VCF for quality\n")
+}
 
-# Headers in VCF file
-# INDEL       IDV       IMF        DP       VDB       RPB       MQB       BQ
-# MQSB       SGB      MQ0F      I16       QS        PL      PL.1      PL.2
-## TODO what is a VCF file supposed to look like?? Is this accurate?
 
 
 # ------------------------ #
