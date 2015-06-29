@@ -20,8 +20,8 @@ require("customProDB")
 # To explore available reference datasets in Biomart
 # listMarts() # lists all types of data
 
-annotation_path_mm = "/share/milklab/proteomics/VariantCalling/output_customProDB/"
-annotation_path_hs = "/share/milklab/proteomics/VariantCalling/output_customProDB/"
+annotation_path_mm = "/share/milklab/proteomics/run_customProDB/"
+annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
 # alternatively, could use tmepdir() to generate a unique path
 
 # # # # # # # # 
@@ -44,13 +44,14 @@ if(retrieveReference_mm == TRUE){
                           splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
 }
 
+# Ensembl human data as option for other users
 if(retrieveReference_hs == TRUE){
 	ensembl = useMart(biomart="ensembl") # creates a Mart object
 	# listDatasets(ensembl) # view available datasets (optional) 
 	ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host="oct2014.archive.ensembl.org")
 	PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_hs, 
                           splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
-
+}
 # Retrieve annotation data from UCSC for human
   # Human: GRCh37
 # This version matches what DGL originally used to make the BAM files
@@ -68,9 +69,9 @@ if(retrieveReference_hs == TRUE){
 # filtering on RPKM
 #
 # # # # # # # # 
-
+cat("Loading customProDB function...\n")
 run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleSample = TRUE, path_to_sample="./", correct_chr_name=FALSE){
- 
+	# TODO add qc for path to sample 
   # Load annotation data
   cat("Loading annotation data...\n")
   load(paste(annotation_path, "exon_anno.RData", sep = ""))
@@ -99,14 +100,20 @@ run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleS
   
   }
 }
+cat("Completed loading customProDB function...\n")
 
-# Macaque
-run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, correct_chr_name=TRUE,
-                path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/monkey_2_1_index18_accepted_hits.bam")
+# Macaque on Cluster
+#run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/monkey_2_1_index18.bam")
+
+# Macaque for file samples
+run_customProDB(annotation_path=annotation_path_mm, outfile="monkey_all_customProDB.fasta", singleSample=FALSE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/")
+
+# Macaque on MBP 
+#run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, correct_chr_name=TRUE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/monkey_2_1_index18_accepted_hits.bam")
 
 # Human
 # For multiple samples this will run on all bam files within one folder
-run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_Custo  mProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
+#run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_Custo  mProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
 
 # # # # # # # # 
 #
@@ -114,13 +121,13 @@ run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_Cu
 # with variant calling
 #
 # # # # # # # # 
-vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
-vcf = InputVcf(vcffile)
+#vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
+#vcf = InputVcf(vcffile)
 
 # vcf[[1]][1:3] # pull an example range of variants
-if (table(values(vcf[[1]])[['INDEL']]) < 5) {
-	cat("Warning: less than 5 INDELs check VCF for quality\n")
-}
+#if (table(values(vcf[[1]])[['INDEL']]) < 5) {
+#	cat("Warning: less than 5 INDELs check VCF for quality\n")
+#}
 
 
 
@@ -133,9 +140,9 @@ if (table(values(vcf[[1]])[['INDEL']]) < 5) {
 
 # ------------------------ #
 # Check if our BAM file matches the exon data in database
-tmp = read.table("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/tmp.txt", header = FALSE)
-table(tmp)
-table(exon$chromosome_name)
+#tmp = read.table("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/tmp.txt", header = FALSE)
+#table(tmp)
+#table(exon$chromosome_name)
 
 # tmp
 # chr1   chr10   chr11   chr12   chr13   chr14   chr15   chr16   chr17   chr18   chr19    chr2   chr20   chr21   chr22 
@@ -146,17 +153,17 @@ table(exon$chromosome_name)
 
 
 
-chrY_tmp = read.table("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/tmp2.txt", sep= "\t", fill = TRUE, header = FALSE)
+#chrY_tmp = read.table("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/tmp2.txt", sep= "\t", fill = TRUE, header = FALSE)
 
 # regions of homoology between X and Y chromosomes
 # http://en.wikipedia.org/wiki/Pseudoautosomal_region
 
-options(scipen = 10)
-par(mfrow = c(1,1))
-hist(chrY_tmp$V4, breaks = 25,
-     xlim = c(0, max(chrY_tmp$V4, na.rm = TRUE)))
+#options(scipen = 10)
+#par(mfrow = c(1,1))
+#hist(chrY_tmp$V4, breaks = 25,
+#     xlim = c(0, max(chrY_tmp$V4, na.rm = TRUE)))
 
-plot(density(chrY_tmp$V4, na.rm = TRUE))
+#plot(density(chrY_tmp$V4, na.rm = TRUE))
 
 
 
