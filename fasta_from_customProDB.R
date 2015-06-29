@@ -29,7 +29,7 @@ annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
 # Get annotation data
 #
 # # # # # # # # 
-# From Enseml
+# From Ensembl
 # Versions corresponding to our BAM files
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
 retrieveReference_mm = FALSE
@@ -52,7 +52,7 @@ if(retrieveReference_hs == TRUE){
 	PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_hs, 
                           splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
 }
-# Retrieve annotation data from UCSC for human
+# Retrieve annotation data from UCSC for human when necessary
   # Human: GRCh37
 # This version matches what DGL originally used to make the BAM files
 # Note: Annotation data must first be downloaded from online interface per vignette
@@ -71,14 +71,13 @@ if(retrieveReference_hs == TRUE){
 # # # # # # # # 
 cat("Loading customProDB function...\n")
 run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleSample = TRUE, path_to_sample="./", correct_chr_name=FALSE){
-	# TODO add qc for path to sample 
   # Load annotation data
   cat("Loading annotation data...\n")
   load(paste(annotation_path, "exon_anno.RData", sep = ""))
   load(paste(annotation_path, "ids.RData",       sep = ""))
   load(paste(annotation_path, "proseq.RData",    sep = ""))
   
-  # re-map chromosome names to match BAM file (if needed, typcial for Ensembl file, not for UCSC)
+  # re-map chromosome names to match BAM file (optional: typically required for Ensembl, not for UCSC)
   if (correct_chr_name == TRUE) {
     cat("Correcting chromosome name...\n")
     exon$chromosome_name = paste("chr", exon$chromosome_name, sep = "") 
@@ -96,24 +95,21 @@ run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleS
     cat("Filtering multiple samples on RPKM...\n")
     bamFiles = paste(path_to_sample, list.files(path_to_sample, pattern = "*.bam$"), sep="") # Load all bam files within one directory
     RPKMs = sapply(bamFiles, function(x) calculateRPKM(x, exon, proteincodingonly = TRUE, ids))
-    pro = OutputsharedPro(RPKMs, cutoff=1, share_sample=2, proteinseq, outf1, ids) # for multiple samples
+    OutputsharedPro(RPKMs, cutoff=1, share_sample=2, proteinseq, outf1, ids) # for multiple samples
   
   }
 }
 cat("Completed loading customProDB function...\n")
 
-# Macaque on Cluster
+# Macaque on Cluster - single test sample
 #run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/monkey_2_1_index18.bam")
 
-# Macaque for file samples
-run_customProDB(annotation_path=annotation_path_mm, outfile="monkey_all_customProDB.fasta", singleSample=FALSE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/")
-
-# Macaque on MBP 
-#run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, correct_chr_name=TRUE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/monkey_2_1_index18_accepted_hits.bam")
+# Macaque for Cluster - multiple bio reps
+# run_customProDB(annotation_path=annotation_path_mm, outfile="monkey_all_customProDB.fasta", singleSample=FALSE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/")
 
 # Human
-# For multiple samples this will run on all bam files within one folder
-#run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_Custo  mProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
+# TODO update for cluster
+#run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
 
 # # # # # # # # 
 #
@@ -121,13 +117,13 @@ run_customProDB(annotation_path=annotation_path_mm, outfile="monkey_all_customPr
 # with variant calling
 #
 # # # # # # # # 
-#vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
-#vcf = InputVcf(vcffile)
+vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
+vcf = InputVcf(vcffile)
 
-# vcf[[1]][1:3] # pull an example range of variants
-#if (table(values(vcf[[1]])[['INDEL']]) < 5) {
-#	cat("Warning: less than 5 INDELs check VCF for quality\n")
-#}
+vcf[[1]][1:3] # pull an example range of variants
+if (table(values(vcf[[1]])[['INDEL']]) < 5) {
+	cat("Warning: less than 5 INDELs check VCF for quality\n")
+}
 
 
 
