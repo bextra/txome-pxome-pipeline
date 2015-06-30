@@ -117,15 +117,30 @@ cat("Completed loading customProDB function...\n")
 # with variant calling
 #
 # # # # # # # # 
-vcffile = "/share/milklab/proteomics/VariantCalling/macaque_var.flt.vcf"
+vcffile = "/share/milklab/proteomics/VariantCalling/updated_monkey_pxtx_paired.vcf"
 vcf = InputVcf(vcffile)
 
-vcf[[1]][1:3] # pull an example range of variants
-if (table(values(vcf[[1]])[['INDEL']]) < 5) {
+# vcf[[1]][1:3] # pull an example range of variants
+if (table(values(vcf[[1]])[['INDEL']])[2] < 5) {
 	cat("Warning: less than 5 INDELs check VCF for quality\n")
 }
 
+index <- which(values(vcf[[1]])[['INDEL']]==TRUE)
+indelvcf <- vcf[[1]][index]
 
+index <- which(values(vcf[[1]])[['INDEL']]==FALSE)
+SNVvcf <- vcf[[1]][index]
+
+load(paste(annotation_path_mm, "ids.RData", sep=""))
+head(ids)
+
+
+txdb <- loadDb(paste(annotation_path_mm, "txdb.sqlite", sep=""))
+
+SNVloc <- Varlocation(SNVvcf,txdb,ids)
+head(SNVloc)
+#indelloc <- Varlocation(indelvcf,txdb,ids)
+#table(SNVloc[,'location'])
 
 # ------------------------ #
 
