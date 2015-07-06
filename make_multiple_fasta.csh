@@ -5,7 +5,6 @@
 #mkdir input_Sixpack
 rm input_Sixpack/*
 cd input_Sixpack
-#~/work/perl/split_fasta.pl ../trinity_out_dir/Trinity.fasta 
 ~/work/perl/split_fasta.pl ../trinity_out_m2_1_i18.Trinity.fasta
  
 
