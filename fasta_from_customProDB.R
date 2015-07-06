@@ -132,15 +132,14 @@ index <- which(values(vcf[[1]])[['INDEL']]==FALSE)
 SNVvcf <- vcf[[1]][index]
 
 load(paste(annotation_path_mm, "ids.RData", sep=""))
-head(ids)
-
 
 txdb <- loadDb(paste(annotation_path_mm, "txdb.sqlite", sep=""))
 
 SNVloc <- Varlocation(SNVvcf,txdb,ids)
 head(SNVloc)
-#indelloc <- Varlocation(indelvcf,txdb,ids)
-#table(SNVloc[,'location'])
+
+indelloc <- Varlocation(indelvcf,txdb,ids)
+table(SNVloc[,'location'])
 
 # ------------------------ #
 
