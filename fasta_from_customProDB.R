@@ -2,7 +2,8 @@
 # K. Beck
 
 # Objective:
-# This script generates a fasta file from input RNA-Seq reads (BAM format) and a VCF to assist with SNP detection and sequence variants.
+# This script generates a fasta file from input RNA-Seq reads (BAM format) and 
+# a VCF to assist with SNP detection and sequence variants.
 
 # # # # # # # # 
 #
@@ -20,9 +21,30 @@ require("customProDB")
 # To explore available reference datasets in Biomart
 # listMarts() # lists all types of data
 
-annotation_path_mm = "/share/milklab/proteomics/run_customProDB/"
+setwd("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/")
+# KB local only
+
+# cluster
+# annotation_path_mm = "/share/milklab/proteomics/run_customProDB/" 
+
+annotation_path_mm = "./"
+
 annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
 # alternatively, could use tmepdir() to generate a unique path
+
+
+
+
+# TODO find out if you can just download the variance information and subset for protein coding
+
+# # # # # # # # 
+#
+# get dbsnp data
+#
+# # # # # # # # 
+
+
+
 
 # # # # # # # # 
 #
@@ -32,7 +54,7 @@ annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
 # From Ensembl
 # Versions corresponding to our BAM files
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
-retrieveReference_mm = FALSE
+retrieveReference_mm = TRUE
 retrieveReference_hs = FALSE
 
 if(retrieveReference_mm == TRUE){
@@ -41,8 +63,10 @@ if(retrieveReference_mm == TRUE){
 	# listDatasets(ensembl) # view available datasets (optional)
 	ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "mmulatta_gene_ensembl", host="may2012.archive.ensembl.org")
 	PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_mm, 
-                          splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
+                          splice_matrix = FALSE, dbsnp=NULL, COSMIC=TRUE)
 }
+
+# note: dbSNP data is only retrievable from customprodb for human and mouse 
 
 # Ensembl human data as option for other users
 if(retrieveReference_hs == TRUE){
@@ -77,7 +101,8 @@ run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleS
   load(paste(annotation_path, "ids.RData",       sep = ""))
   load(paste(annotation_path, "proseq.RData",    sep = ""))
   
-  # re-map chromosome names to match BAM file (optional: typically required for Ensembl, not for UCSC)
+  # re-map chromosome names to match BAM file 
+  # (optional: typically required for Ensembl, not for UCSC)
   if (correct_chr_name == TRUE) {
     cat("Correcting chromosome name...\n")
     exon$chromosome_name = paste("chr", exon$chromosome_name, sep = "") 
@@ -93,23 +118,39 @@ run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleS
     
   } else if (singleSample == FALSE) {
     cat("Filtering multiple samples on RPKM...\n")
-    bamFiles = paste(path_to_sample, list.files(path_to_sample, pattern = "*.bam$"), sep="") # Load all bam files within one directory
-    RPKMs = sapply(bamFiles, function(x) calculateRPKM(x, exon, proteincodingonly = TRUE, ids))
-    OutputsharedPro(RPKMs, cutoff=1, share_sample=2, proteinseq, outf1, ids) # for multiple samples
+    # Load all bam files within one directory
+    bamFiles = paste(path_to_sample, 
+                     list.files(path_to_sample, pattern = "*.bam$"), sep="") 
+    RPKMs = sapply(bamFiles, function(x) 
+      calculateRPKM(x, exon, proteincodingonly = TRUE, ids)
+      )
+    # for multiple samples
+    OutputsharedPro(RPKMs, cutoff=1, share_sample=2, proteinseq, outf1, ids) 
   
   }
 }
 cat("Completed loading customProDB function...\n")
 
+# *Note:* tested the easy run function, but it errored out on our samples in any
+# configuration
+
 # Macaque on Cluster - single test sample
-#run_customProDB(annotation_path= annotation_path_mm, outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/monkey_2_1_index18.bam")
+# run_customProDB(annotation_path= annotation_path_mm, 
+#   outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, 
+#   correct_chr_name=TRUE, 
+#   path_to_sample="/share/milklab/proteomics/BAM_files/monkey_2_1_index18.bam")
 
 # Macaque for Cluster - multiple bio reps
-# run_customProDB(annotation_path=annotation_path_mm, outfile="monkey_all_customProDB.fasta", singleSample=FALSE, correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/")
+# run_customProDB(annotation_path=annotation_path_mm, 
+#   outfile="monkey_all_customProDB.fasta", singleSample=FALSE, 
+#   correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/")
 
 # Human
 # TODO update for cluster
-#run_customProDB(annotation_path= annotation_path_hs, outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, correct_chr_name=FALSE, path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
+#run_customProDB(annotation_path= annotation_path_hs, 
+#   outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, 
+#   correct_chr_name=FALSE, 
+#   path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
 
 # # # # # # # # 
 #
@@ -117,7 +158,8 @@ cat("Completed loading customProDB function...\n")
 # with variant calling
 #
 # # # # # # # # 
-vcffile = "/share/milklab/proteomics/VariantCalling/updated_monkey_pxtx_paired.vcf"
+# vcffile = "/share/milklab/proteomics/VariantCalling/updated_monkey_pxtx_paired.vcf"
+vcffile = "./updated_monkey_pxtx_paired.vcf"
 vcf = InputVcf(vcffile)
 
 # vcf[[1]][1:3] # pull an example range of variants
@@ -125,21 +167,43 @@ if (table(values(vcf[[1]])[['INDEL']])[2] < 5) {
 	cat("Warning: less than 5 INDELs check VCF for quality\n")
 }
 
-index <- which(values(vcf[[1]])[['INDEL']]==TRUE)
-indelvcf <- vcf[[1]][index]
+# subset the object for indels
+index <- which(values(vcf[[1]])[['INDEL']]==TRUE) # get rows that are indels
+indelvcf <- vcf[[1]][index] # subset the object
 
+# subset the object for SNVs
 index <- which(values(vcf[[1]])[['INDEL']]==FALSE)
 SNVvcf <- vcf[[1]][index]
 
 load(paste(annotation_path_mm, "ids.RData", sep=""))
 
 txdb <- loadDb(paste(annotation_path_mm, "txdb.sqlite", sep=""))
+# this chr is named 1, 2, 3, etc.
 
 SNVloc <- Varlocation(SNVvcf,txdb,ids)
-head(SNVloc)
+# table(SNVloc$location)
+# TODO fix this bug... does the chr name in the sqlite db need to be prefixed with chr?
+# QQ all locations are returned as unknown... why?
+# Warning: In .Seqinfo.mergexy(x, y) :
+#  The 2 combined objects have no sequence levels in common.
 
 indelloc <- Varlocation(indelvcf,txdb,ids)
 table(SNVloc[,'location'])
+# TODO is this caused by the bug above?
+# still listed as all unknown
+
+load("exon_anno.RData")
+postable_indel <- Positionincoding(indelvcf, exon)
+# TODO another thing to troubleshoot
+# Error in .Call2("solve_user_SEW0", start, end, width, PACKAGE = "IRanges") : 
+#  solving row 1: range cannot be determined from the supplied arguments (too many NAs)
+
+# TODO the dbsnp and COSMIC info is only retrieval for human and mouse
+# TODO could re-make a dbsnp database
+  # need to count variant allele's and make them separated by a comma
+  # need to convert chromosome positions to a range
+  # need to change strandedness from + to - etc
+# TODO what about cosmic? what is that?
 
 # ------------------------ #
 
