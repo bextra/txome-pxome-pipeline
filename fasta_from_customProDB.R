@@ -29,7 +29,9 @@ setwd("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/")
 
 annotation_path_mm = "./"
 
-annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
+# cluster
+# annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
+annotation_path_hs = "./"
 # alternatively, could use tmepdir() to generate a unique path
 
 
@@ -54,7 +56,7 @@ annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
 # From Ensembl
 # Versions corresponding to our BAM files
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
-retrieveReference_mm = TRUE
+retrieveReference_mm = FALSE
 retrieveReference_hs = FALSE
 
 if(retrieveReference_mm == TRUE){
@@ -80,11 +82,14 @@ if(retrieveReference_hs == TRUE){
   # Human: GRCh37
 # This version matches what DGL originally used to make the BAM files
 # Note: Annotation data must first be downloaded from online interface per vignette
-# pepfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_proseq.fasta"
-# CDSfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_codingseq.fasta"
-#PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, annotation_path=annotation_path_hs, 
-#                         splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
-# option to filter for specific transcript ids by storing them as a vector and then setting transcrip_ids= to the that vector above
+pepfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_proseq.fasta"
+CDSfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_codingseq.fasta"
+PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, 
+                        annotation_path=annotation_path_hs, 
+                        splice_matrix = FALSE, dbsnp = "snp130", COSMIC = TRUE
+                        )
+# option to filter for specific transcript ids by storing them as a vector and 
+# then setting transcrip_ids= to the that vector above
 
 
 # # # # # # # # 
