@@ -17,6 +17,14 @@
 
 # Load required packages
 require("customProDB")
+require("stringr")
+
+# quality control: make sure customProDB is up to date
+session = sessionInfo()
+customProDBVersion = unlist(str_split(session$otherPkgs$customProDB$Version, "\\."))
+if(!(customProDBVersion[1] >= 1 & customProDBVersion[2] >= 8 & customProDBVersion[3] >= 2)) {
+  message("Please upgrade customProDB to version 1.8.2 or greater\n")
+}
 
 # To explore available reference datasets in Biomart
 # listMarts() # lists all types of data
