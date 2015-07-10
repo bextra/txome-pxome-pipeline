@@ -1,4 +1,4 @@
-#!/bin/csh
+#!/bin/bash
 # After Sixpack has run, it creates seperate files for each single sequence
 # These need to be combined into one single fasta file of all possible ORFs
 echo "starting cat"
