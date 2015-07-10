@@ -20,8 +20,7 @@ require("customProDB")
 require("stringr")
 
 # quality control: make sure customProDB is up to date
-session = sessionInfo()
-customProDBVersion = unlist(str_split(session$otherPkgs$customProDB$Version, "\\."))
+customProDBVersion = unlist(str_split(packageDescription("customProDB")$Version, "\\."))
 if(!(customProDBVersion[1] >= 1 & customProDBVersion[2] >= 8 & customProDBVersion[3] >= 2)) {
   message("Please upgrade customProDB to version 1.8.2 or greater\n")
 }
@@ -242,7 +241,7 @@ outfile <- "snv_human.fasta"
 load("proseq.RData")
 
 OutputVarproseq(mtab, proteinseq, outfile, ids)
-# results in 704 proteins non-synonymous SNVs into FASTA file
+
 
 txlist_indel <- unique(postable_indel[, 'txid'])
 codingseq_indel <- procodingseq[procodingseq[, 'tx_id'] %in% txlist_indel, ]
