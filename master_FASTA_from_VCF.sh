@@ -3,29 +3,33 @@
 # 1. Prepare BAM files for generating VCF
 # Remove duplicates from RNA-Seq reads (alleviates pseudo-replication due to PCR amplification)
 # Dependencies: samtools (v0.1.7a, other versions may be acceptable if working on the new cluster)
-./bin/dedup_txpx_paired.sh
+#./bin/dedup_txpx_paired.sh
 
-# 1. Make VCF file
+
+# 2. Make VCF file
 # - reference fasta required
 # - BAM files required
 # Dependencies: samtools (v1.2 or newer), bcftools (v1.2-22)
-./bin/vcf_qsub.sh
+#qsub -S /bin/bash -pe threaded 2 ./bin/vcf_qsub.sh
+# compute resources may change as desired
 
-# 2. Prepare BAM files for use with customProDB
+
+# 3. Prepare BAM files for use with customProDB
 # Optional: if your BAM files are not indexed, change INDEXBAMS to = TRUE
 INDEXBAMS=FALSE
 
-if $INDEXBAMS == TRUE
+if [ $INDEXBAMS == TRUE ]; then
 	module load samtools/1.2
-	samtools index /share/milklab/BAM_files/*
+	for i in /share/milklab/proteomics/BAM_files/human*.bam
+	   do
+		echo "indexing $i"
+		samtools index $i
+	   done
+	exit 1;
+fi
 
 
-# generate index file using
-module load samtools/0.1.7a
-samtools index [file.bam]
+# 4. Run customProDB
+Rscript ./bin/fasta_from_customProDB.R
 
-# use samtools and bcftools to generate VCF file
-use local bcftools in /share/milklab/proteomics/Tools/bcftools/bcftools-1.2-22/
-generate with ...
-/share/milklab/proteomics/Code/txome-pxome-pipeline/vcf_qsub.sh
 

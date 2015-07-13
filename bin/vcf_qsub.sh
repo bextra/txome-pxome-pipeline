@@ -7,9 +7,9 @@ module load samtools/1.2
 PATH=$PATH:/share/milklab/proteomics/Tools/bcftools/Current
 export PATH
 
-#make writing file names easier
+# make writing file names easier
 FILEROOT=/share/milklab/proteomics/VariantCalling
-BAMPATH=/share/milklab/proteomics/BAM_files
+BAMPATH=/share/milklab/proteomics/VariantCalling
 
 # generate VCF file
 # for macaque:
