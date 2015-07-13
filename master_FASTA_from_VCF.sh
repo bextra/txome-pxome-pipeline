@@ -21,10 +21,10 @@ INDEXBAMS=FALSE
 if [ $INDEXBAMS == TRUE ]; then
 	module load samtools/1.2
 	for i in /share/milklab/proteomics/BAM_files/human*.bam
-	   do
-		echo "indexing $i"
-		samtools index $i
-	   done
+		do
+			echo "indexing $i"
+			samtools index $i
+		done
 	exit 1;
 fi
 
