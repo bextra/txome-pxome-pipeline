@@ -155,87 +155,59 @@ run_customProDB(annotation_path= annotation_path_hs,
 #
 # # # # # # # # 
 
-# There were significant issues trying to get the variant annotation portion
-# of customProDB to work. These are described below.
-# Code that is present represents the portions that work unless otherwise
-# noted with an error message
-
-# dbSNP data is only retrievable from customprodb for human and mouse organisms
-# https://support.bioconductor.org/p/69592/
+# Note: customProDB was written for variant annotation for only human and mouse
+# Developer response here: https://support.bioconductor.org/p/69592/
 # dbsnp would not accept any of the parameters suggested in the package vignette
-# or in the help page. This has been posted to a bioconductor help page:
+# or in the help page (6/13/15).
+# Per the developer's reply, you can construct dbSNP using snp138
 # https://support.bioconductor.org/p/69670/
 
-# per the developer's reply, you can construct it with snp138
+
 
 # Load in VCF File
-# monkey vcf on cluster
-# vcffile = "/share/milklab/proteomics/VariantCalling/updated_monkey_pxtx_paired.vcf"
 vcffile = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/human_pxtx_paired.vcf"
 vcf = InputVcf(vcffile)
 
-# vcf[[1]][1:3] # pull an example range of variants
+# quality control vcf
 if (table(values(vcf[[1]])[['INDEL']])[2] < 5) {
-	cat("Warning: less than 5 INDELs check VCF for quality\n")
+	stop("Less than 5 INDELs check VCF for quality\n")
 }
 
 # subset the object for indels
-index <- which(values(vcf[[1]])[['INDEL']]==TRUE) # get rows that are indels
-indelvcf <- vcf[[1]][index] # subset the object
+index    = which(values(vcf[[1]])[['INDEL']]==TRUE) # get rows that are indels
+indelvcf = vcf[[1]][index] # subset the object
 
 # subset the object for SNVs
-index <- which(values(vcf[[1]])[['INDEL']]==FALSE)
-SNVvcf <- vcf[[1]][index]
+index  = which(values(vcf[[1]])[['INDEL']]==FALSE)
+SNVvcf = vcf[[1]][index]
 
 load(paste(annotation_path_hs, "ids.RData", sep=""))
+txdb = loadDb(paste(annotation_path_hs, "txdb.sqlite", sep=""))
 
-txdb <- loadDb(paste(annotation_path_hs, "txdb.sqlite", sep=""))
-# this chr is named 1, 2, 3, etc.
 
-SNVloc <- Varlocation(SNVvcf,txdb,ids)
+SNVloc = Varlocation(SNVvcf,txdb,ids)
 table(SNVloc$location)
-# TODO fix this bug... does the chr name in the sqlite db need to be prefixed with chr?
-# QQ all locations are returned as unknown... why?
-# Warning: In .Seqinfo.mergexy(x, y) :
-#  The 2 combined objects have no sequence levels in common.
 
-indelloc <- Varlocation(indelvcf,txdb,ids)
+indelloc = Varlocation(indelvcf,txdb,ids)
 table(indelloc[,'location'])
-# TODO is this caused by the bug above?
-# still listed as all unknown
+
 
 load("exon_anno.RData")
 load("dbsnpinCoding.RData")
 load("cosmic.RData")
 
-postable_snv <- Positionincoding(SNVvcf, exon, dbsnpinCoding, COSMIC=cosmic)
-postable_indel <- Positionincoding(indelvcf, exon)
-# TODO another thing to troubleshoot
-# Error in .Call2("solve_user_SEW0", start, end, width, PACKAGE = "IRanges") : 
-#  solving row 1: range cannot be determined from the supplied arguments (too many NAs)
+postable_snv   = Positionincoding(SNVvcf, exon, dbsnpinCoding, COSMIC=cosmic)
+postable_indel = Positionincoding(indelvcf, exon)
 
-# TODO the dbsnp and COSMIC info is only retrieval for human and mouse
-# TODO could re-make a dbsnp database
-  # need to count variant allele's and make them separated by a comma
-  # need to convert chromosome positions to a range
-  # need to change strandedness from + to - etc
-  # then load in file with makeGRangesFromDataFrame()
-# TODO what about cosmic? what is that?
-
-
-# continuation with human data
 load("procodingseq.RData")
-txlist <- unique(postable_snv[, 'txid'])
-codingseq <- procodingseq[procodingseq[, 'tx_id'] %in% txlist,]
-mtab <- aaVariation(postable_snv, codingseq)
+txlist = unique(postable_snv[, 'txid'])
+codingseq = procodingseq[procodingseq[, 'tx_id'] %in% txlist,]
+mtab = aaVariation(postable_snv, codingseq)
 table(mtab$vartype) # 1259 non-synonymous changes
-# Warning messages:
-#   1: In .Method(..., deparse.level = deparse.level) :
-#   number of columns of result is not a multiple of vector length (arg 3)
+
 
 outfile <- "snv_human.fasta"
 load("proseq.RData")
-
 OutputVarproseq(mtab, proteinseq, outfile, ids)
 
 
@@ -244,61 +216,13 @@ codingseq_indel <- procodingseq[procodingseq[, 'tx_id'] %in% txlist_indel, ]
 # there are 30 out of the 35 indels (this number is down from previous ~1500, why?)
 outfile <- "indel_human.fasta"
 
-# TODO work from here
 
 Outputaberrant(postable_indel, 
                coding=codingseq_indel, # there are 5 less than postable_indel
                proteinseq=proteinseq, 
                outfile=outfile, ids=ids)
-# Error in translate(DNAStringSet(total[, "coding"])) : 
-#   error in evaluating the argument 'x' in selecting a method for function 'translate': Error in width(x) : NAs in 'x' are not supported
 
 
 
-
-# ------------------------ #
-
-# Research and Notes
-# https://www.biostars.org/p/63429/
-
-
-
-# ------------------------ #
-# Check if our BAM file matches the exon data in database
-#tmp = read.table("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/tmp.txt", header = FALSE)
-#table(tmp)
-#table(exon$chromosome_name)
-
-# tmp
-# chr1   chr10   chr11   chr12   chr13   chr14   chr15   chr16   chr17   chr18   chr19    chr2   chr20   chr21   chr22 
-# 1147846  424346  650613 1888193  242957  307738  347684  332824  747426  132260  538888  779291  227360  116425  216985 
-# chr3    chr4    chr5    chr6    chr7    chr8    chr9    chrM    chrX    chrY 
-# 895167 2798164  573319  655589  594033  430142  688995  237872  323777   71465 
-
-
-
-
-#chrY_tmp = read.table("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/tmp2.txt", sep= "\t", fill = TRUE, header = FALSE)
-
-# regions of homoology between X and Y chromosomes
-# http://en.wikipedia.org/wiki/Pseudoautosomal_region
-
-#options(scipen = 10)
-#par(mfrow = c(1,1))
-#hist(chrY_tmp$V4, breaks = 25,
-#     xlim = c(0, max(chrY_tmp$V4, na.rm = TRUE)))
-
-#plot(density(chrY_tmp$V4, na.rm = TRUE))
-
-
-
-
-
-
-
-
-
-
-
-# *Note:* tested the easyRun and easyRunMul functions, but they both resulted in
-# an non-descript error
+# *Note:* tested the easyRun and easyRunMul functions for human, but they both 
+# resulted in an non-descript error
