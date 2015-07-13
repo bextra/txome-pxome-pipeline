@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # load samtools
-module load samtools/0.1.7a
+module load samtools/1.2
 
 # array of samples that have paired RNA-Seq and proteomic data
 # paired info in /share/milklab/proteomics/phenodata_RNA_Seq_to_proteomics.txt 
 MM_SAMPLES=(monkey_2_1_index18 monkey_3_1_index12 monkey_3_1_index16 monkey_4_1_index5 monkey_4_1_index15)
-HS_SAMPLES=(human_index2_run1 human_index7_run1 human_index14_run1)
+HS_SAMPLES=(human_index14_run1 human_index14_run2lane2 human_index14_run2lane3 human_index2_run1 human_index2_run2lane2 human_index2_run2lane3 human_index7_run1 human_index7_run2lane2 human_index7_run2lane3)
 
 # remove duplicate reads
 #for i in ${MM_SAMPLES[@]} # remove comment to run on macaque samples instead of human samples
