@@ -22,20 +22,18 @@ require("stringr")
 # quality control: make sure customProDB is up to date
 customProDBVersion = unlist(str_split(packageDescription("customProDB")$Version, "\\."))
 if(!(customProDBVersion[1] >= 1 & customProDBVersion[2] >= 8 & customProDBVersion[3] >= 2)) {
-  message("Please upgrade customProDB to version 1.8.2 or greater\n")
+  stop("Please upgrade customProDB to version 1.8.2 or greater\n")
 }
 
 # To explore available reference datasets in Biomart
 # listMarts() # lists all types of data
 
-setwd("~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/")
-# KB local only
+setwd("/share/milklab/proteomics/run_customProDB/")
 
-annotation_path_mm = "/share/milklab/proteomics/run_customProDB/" 
-
-annotation_path_hs = "./"
-# Cluster
-# annotation_path_hs = "/share/milklab/proteomics/run_customProDB/"
+# Path to input of annotation data for UCSC annotated samples
+# Will also be path to subsequent retrieved reference data
+annotation_path_mm = "/share/milklab/proteomics/run_customProDB/Macaque_Ref"
+annotation_path_hs = "/share/milklab/proteomics/run_customProDB/Human_Ref"
 # alternatively, could use tmepdir() to generate a unique path
 
 
@@ -47,10 +45,12 @@ annotation_path_hs = "./"
 # From Ensembl
 # Versions corresponding to our BAM files
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
-retrieveReference_mm = FALSE
-retrieveReference_hs = FALSE
+retrieve_macaque_ensembl = FALSE
+retrieve_human_ensembl   = TRUE
 
-if(retrieveReference_mm == TRUE){
+# Retrieve reference data from Ensembl
+# This version matches what DGL originally used to make the BAM files
+if(retrieve_macaque_ensembl == TRUE){
 	cat("Retrieving annotation data\n")
 	ensembl = useMart(biomart="ensembl") # creates a Mart object
 	# listDatasets(ensembl) # view available datasets (optional)
@@ -59,22 +59,23 @@ if(retrieveReference_mm == TRUE){
                           splice_matrix = FALSE, dbsnp=NULL, COSMIC=TRUE)
 }
 
-
-
-# Ensembl human data as option for other users
-if(retrieveReference_hs == TRUE){
+# Retrieve Ensembl human data (option for other users, not needed for milk project)
+if(retrieve_human_ensembl == TRUE){
 	ensembl = useMart(biomart="ensembl") # creates a Mart object
 	# listDatasets(ensembl) # view available datasets (optional) 
 	ensembl = useMart("ENSEMBL_MART_ENSEMBL", dataset = "hsapiens_gene_ensembl", host="oct2014.archive.ensembl.org")
 	PrepareAnnotationEnsembl(mart=ensembl, annotation_path=annotation_path_hs, 
                           splice_matrix = FALSE, dbsnp = NULL, COSMIC = FALSE)
 }
+
+
 # Retrieve annotation data from UCSC for human when necessary
   # Human: GRCh37
 # This version matches what DGL originally used to make the BAM files
-# Note: Annotation data must first be downloaded from online interface per vignette
-pepfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_proseq.fasta"
-CDSfasta = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Make_FASTA_customProDB/Human/hg19_GRCh37_codingseq.fasta"
+# NOTE: Annotation data must first be downloaded from online interface per 
+# instructions in the package vignette
+pepfasta = "/share/milklab/proteomics/run_customProDB/Human_Ref/hg19_GRCh37_proseq.fasta"
+CDSfasta = "/share/milklab/proteomics/run_customProDB/Human_Ref/hg19_GRCh37_codingseq.fasta"
 PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, 
                         annotation_path=annotation_path_hs, 
                         splice_matrix = FALSE, dbsnp = "snp138", COSMIC = TRUE
@@ -97,8 +98,8 @@ run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleS
   load(paste(annotation_path, "ids.RData",       sep = ""))
   load(paste(annotation_path, "proseq.RData",    sep = ""))
   
-  # re-map chromosome names to match BAM file 
-  # (optional: typically required for Ensembl, not for UCSC)
+  # Re-map chromosome names to match BAM file 
+  # *optional:* typically required for Ensembl, not for UCSC)
   if (correct_chr_name == TRUE) {
     cat("Correcting chromosome name...\n")
     exon$chromosome_name = paste("chr", exon$chromosome_name, sep = "") 
@@ -120,7 +121,7 @@ run_customProDB = function(annotation_path="./", outfile="custom.fasta", singleS
     RPKMs = sapply(bamFiles, function(x) 
       calculateRPKM(x, exon, proteincodingonly = TRUE, ids)
       )
-    # for multiple samples
+    # For multiple samples
     OutputsharedPro(RPKMs, cutoff=1, share_sample=2, proteinseq, outf1, ids) 
   
   }
@@ -129,34 +130,28 @@ cat("Completed loading customProDB function...\n")
 
 
 
-
-# Macaque on Cluster - single test sample
+# Example for Macaque single test sample
 # run_customProDB(annotation_path= annotation_path_mm, 
 #   outfile="monkey_2_1_index18-customProDB.fasta", singleSample=TRUE, 
 #   correct_chr_name=TRUE, 
 #   path_to_sample="/share/milklab/proteomics/BAM_files/monkey_2_1_index18.bam")
 
 # Macaque for Cluster - multiple bio reps
+# All bams are in a single folder
 # run_customProDB(annotation_path=annotation_path_mm, 
 #   outfile="monkey_all_customProDB.fasta", singleSample=FALSE, 
 #   correct_chr_name=TRUE, path_to_sample="/share/milklab/proteomics/BAM_files/")
 
-# Human
-# TODO update for cluster
-#run_customProDB(annotation_path= annotation_path_hs, 
-#   outfile="multiple_sample_CustomProDB.fasta", singleSample=FALSE, 
-#   correct_chr_name=FALSE, 
-#   path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/Reads/Human/")
-
+# Human for cluster
+# All bams are in a single folder
 run_customProDB(annotation_path= annotation_path_hs, 
   outfile="hs_multiple_sample_CustomProDB.fasta", singleSample=FALSE, 
   correct_chr_name=FALSE, 
-  path_to_sample="~/Work/1_Milk/RNA-Seq_Guided_Proteomics/BAMs/Human/")
+  path_to_sample="/share/milklab/proteomics/BAM_files/Human/")
 
 # # # # # # # # 
 #
-# Generate fasta from BAM files 
-# with variant calling
+# Generate variant called fasta
 #
 # # # # # # # # 
 
@@ -224,6 +219,7 @@ postable_indel <- Positionincoding(indelvcf, exon)
   # need to count variant allele's and make them separated by a comma
   # need to convert chromosome positions to a range
   # need to change strandedness from + to - etc
+  # then load in file with makeGRangesFromDataFrame()
 # TODO what about cosmic? what is that?
 
 
