@@ -158,20 +158,21 @@ run_customProDB(annotation_path= annotation_path_hs,
 # There were significant issues trying to get the variant annotation portion
 # of customProDB to work. These are described below.
 # Code that is present represents the portions that work unless otherwise
-# noted with an error message
+# noted with an error message. Ultimately, the core developer replied at the
+# posts below describing that customProDB can only variant annotate for 
+# human and mouse references.
 
 # dbSNP data is only retrievable from customprodb for human and mouse organisms
 # https://support.bioconductor.org/p/69592/
 # dbsnp would not accept any of the parameters suggested in the package vignette
-# or in the help page. This has been posted to a bioconductor help page:
+# or in the help page for human. This has been posted to a bioconductor help page:
 # https://support.bioconductor.org/p/69670/
 
 # per the developer's reply, you can construct it with snp138
 
 # Load in VCF File
 # monkey vcf on cluster
-# vcffile = "/share/milklab/proteomics/VariantCalling/updated_monkey_pxtx_paired.vcf"
-vcffile = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/human_pxtx_paired.vcf"
+vcffile = "/share/milklab/proteomics/VariantCalling/updated_monkey_pxtx_paired.vcf"
 vcf = InputVcf(vcffile)
 
 # vcf[[1]][1:3] # pull an example range of variants
@@ -244,7 +245,6 @@ codingseq_indel <- procodingseq[procodingseq[, 'tx_id'] %in% txlist_indel, ]
 # there are 30 out of the 35 indels (this number is down from previous ~1500, why?)
 outfile <- "indel_human.fasta"
 
-# TODO work from here
 
 Outputaberrant(postable_indel, 
                coding=codingseq_indel, # there are 5 less than postable_indel
