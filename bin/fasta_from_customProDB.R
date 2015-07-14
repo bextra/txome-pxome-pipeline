@@ -46,7 +46,7 @@ annotation_path_hs = "/share/milklab/proteomics/run_customProDB/Human_Ref"
 # Versions corresponding to our BAM files
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
 retrieve_macaque_ensembl = FALSE
-retrieve_human_ensembl   = TRUE
+retrieve_human_ensembl   = FALSE
 
 # Retrieve reference data from Ensembl
 # This version matches what DGL originally used to make the BAM files
