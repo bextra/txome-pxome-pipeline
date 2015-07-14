@@ -165,7 +165,7 @@ run_customProDB(annotation_path= annotation_path_hs,
 
 
 # Load in VCF File
-vcffile = "~/Work/1_Milk/RNA-Seq_Guided_Proteomics/VariantCalling/human_pxtx_paired.vcf"
+vcffile = "/share/milklab/proteomics/VariantCalling/human_pxtx_paired_all_tech_reps.vcf"
 vcf = InputVcf(vcffile)
 
 # quality control vcf
@@ -192,29 +192,29 @@ indelloc = Varlocation(indelvcf,txdb,ids)
 table(indelloc[,'location'])
 
 
-load("exon_anno.RData")
-load("dbsnpinCoding.RData")
-load("cosmic.RData")
+load(paste(annotation_path_hs, "exon_anno.RData", sep=""))
+load(paste(annotation_path_hs, "dbsnpinCoding.RData", sep=""))
+load(paste(annotation_path_hs, "cosmic.RData", sep=""))
 
 postable_snv   = Positionincoding(SNVvcf, exon, dbsnpinCoding, COSMIC=cosmic)
 postable_indel = Positionincoding(indelvcf, exon)
 
-load("procodingseq.RData")
+load(paste(annotation_path_hs, "procodingseq.RData", sep=""))
 txlist = unique(postable_snv[, 'txid'])
 codingseq = procodingseq[procodingseq[, 'tx_id'] %in% txlist,]
 mtab = aaVariation(postable_snv, codingseq)
 table(mtab$vartype) # 1259 non-synonymous changes
 
 
-outfile = "snv_human.fasta"
-load("proseq.RData")
+outfile = "snv.fasta"
+load(paste(annotation_path_hs, "proseq.RData", sep=""))
 OutputVarproseq(mtab, proteinseq, outfile, ids)
 
 
 txlist_indel = unique(postable_indel[, 'txid'])
 codingseq_indel = procodingseq[procodingseq[, 'tx_id'] %in% txlist_indel, ]
 # there are 30 out of the 35 indels (this number is down from previous ~1500, why?)
-outfile <- "indel_human.fasta"
+outfile = "indel_human.fasta"
 
 
 Outputaberrant(postable_indel, 
