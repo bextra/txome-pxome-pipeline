@@ -32,8 +32,8 @@ setwd("/share/milklab/proteomics/run_customProDB/")
 
 # Path to input of annotation data for UCSC annotated samples
 # Will also be path to subsequent retrieved reference data
-annotation_path_mm = "/share/milklab/proteomics/run_customProDB/Macaque_Ref"
-annotation_path_hs = "/share/milklab/proteomics/run_customProDB/Human_Ref"
+annotation_path_mm = "/share/milklab/proteomics/run_customProDB/Macaque_Ref/"
+annotation_path_hs = "/share/milklab/proteomics/run_customProDB/Human_Ref/"
 # alternatively, could use tmepdir() to generate a unique path
 
 
@@ -47,6 +47,7 @@ annotation_path_hs = "/share/milklab/proteomics/run_customProDB/Human_Ref"
   # Macaque: EnsRel67 (MMUL1p0_EnsRel67), May 2012
 retrieve_macaque_ensembl = FALSE
 retrieve_human_ensembl   = FALSE
+retrieve_human_refseq    = FALSE
 
 # Retrieve reference data from Ensembl
 # This version matches what DGL originally used to make the BAM files
@@ -76,12 +77,15 @@ if(retrieve_human_ensembl == TRUE){
 # instructions in the package vignette
 pepfasta = "/share/milklab/proteomics/run_customProDB/Human_Ref/hg19_GRCh37_proseq.fasta"
 CDSfasta = "/share/milklab/proteomics/run_customProDB/Human_Ref/hg19_GRCh37_codingseq.fasta"
-PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, 
-                        annotation_path=annotation_path_hs, 
-                        splice_matrix = FALSE, dbsnp = "snp138", COSMIC = TRUE
-                        )
-# option to filter for specific transcript ids by storing them as a vector and 
-# then setting transcrip_ids= to the that vector above
+if(retrieve_human_refseq == TRUE){
+  PrepareAnnotationRefseq(genome='hg19', CDSfasta, pepfasta, 
+                          annotation_path=annotation_path_hs, 
+                          splice_matrix = FALSE, dbsnp = "snp138", COSMIC = TRUE
+  )
+  # option to filter for specific transcript ids by storing them as a vector and 
+  # then setting transcrip_ids= to the that vector above  
+}
+
 
 
 # # # # # # # # 
