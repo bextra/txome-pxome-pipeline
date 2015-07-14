@@ -218,7 +218,7 @@ OutputVarproseq(mtab, proteinseq, outfile, ids)
 txlist_indel = unique(postable_indel[, 'txid'])
 codingseq_indel = procodingseq[procodingseq[, 'tx_id'] %in% txlist_indel, ]
 # there are 30 out of the 35 indels (this number is down from previous ~1500, why?)
-outfile = "indel_human.fasta"
+outfile = "indel.fasta"
 
 
 Outputaberrant(postable_indel, 
