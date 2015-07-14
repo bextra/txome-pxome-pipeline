@@ -9,10 +9,12 @@
 #Read alignments must be supplied as coordinate-sorted bam file.
 cd /Chanlab/Scratch/kristen/Macaque_transcriptome/BAMs
 
-SAMPLE_LIST="$(ls *.bam)"
+#SAMPLE_LIST="$(ls *.bam)"
+SAMPLE_LIST="$(ls human*.bam)"
 
 for FILE in $SAMPLE_LIST
 do
+	echo "Sorting $FILE"
 	samtools sort -f $FILE sorted_$FILE
 done
 
